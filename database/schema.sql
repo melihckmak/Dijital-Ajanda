@@ -46,3 +46,22 @@ CREATE TABLE IF NOT EXISTS task_comments (
   comment text NOT NULL,
   created_at timestamp with time zone DEFAULT now()
 );
+CREATE TABLE IF NOT EXISTS task_files (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  task_id bigint REFERENCES tasks(id) ON DELETE CASCADE,
+  user_id uuid REFERENCES profiles(id) ON DELETE CASCADE,
+  file_name text NOT NULL,
+  file_url text NOT NULL,
+  version text DEFAULT 'v1.0',
+  created_at timestamp with time zone DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS org_resources (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  org_id uuid REFERENCES organizations(id) ON DELETE CASCADE,
+  name text NOT NULL,
+  status text DEFAULT 'Bekliyor',
+  cost numeric DEFAULT 0,
+  user_id uuid REFERENCES profiles(id) ON DELETE SET NULL,
+  created_at timestamp with time zone DEFAULT now()
+);
