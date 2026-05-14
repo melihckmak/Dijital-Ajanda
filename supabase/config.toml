@@ -1,0 +1,8 @@
+# Proje kökünden: supabase link && supabase functions deploy
+# Edge Function gizlileri: Dashboard → Project Settings → Edge Functions → Secrets
+
+[functions.mail-welcome]
+verify_jwt = false
+
+[functions.mail-reminder-digest]
+verify_jwt = false

@@ -1,0 +1,57 @@
+Merkezi e-posta (Resend + Supabase Edge Functions) — bir kez proje için yapılandırılır; tüm geliştiriciler aynı Supabase projesini kullandığı sürece yerel SMTP veya EXPO_PUBLIC_MAIL_* gerekmez.
+
+1) Resend
+   - https://resend.com hesabı oluştur, API key al.
+   - Test için "from": onboarding@resend.dev (MAIL_FROM secret'ında belirtilebilir).
+
+2) Supabase Dashboard → Edge Functions → Secrets
+   Aşağıdakileri ekle (Supabase zaten sağlar: SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY — yine de eksikse ekle):
+   - RESEND_API_KEY
+   - MAIL_FROM  (örnek: Dijital Ajanda <onboarding@resend.dev>)
+   - DB_WEBHOOK_SECRET  (uzun rastgele string; Database Webhook başlığında kullanılacak)
+   - CRON_SECRET  (uzun rastgele string; hatırlatma HTTP tetikleyicide kullanılacak)
+   - REMINDER_DAYS_AHEAD  (isteğe bağlı, varsayılan 2)
+
+3) SQL
+   - Supabase SQL Editor'da database/migrations/20260515120000_email_tracking.sql dosyasını çalıştır.
+
+4) Fonksiyonları deploy et
+   npm i -g supabase   (veya npx supabase)
+   supabase login
+   supabase link --project-ref <PROJE_REF>
+   supabase functions deploy mail-welcome
+   supabase functions deploy mail-reminder-digest
+
+5) Database Webhook (hoş geldin — oturum olmadan da çalışır)
+   Dashboard → Database → Webhooks → Create
+   - Table: public.profiles, Events: INSERT
+   - URL: https://<PROJE_REF>.supabase.co/functions/v1/mail-welcome
+   - HTTP Headers:  x-database-webhook-secret  =  (DB_WEBHOOK_SECRET ile aynı değer)
+   - HTTP method: POST
+
+6) Yaklaşan görev hatırlatıcısı (günlük tetik)
+   Aşağıdakilerden biri:
+   A) https://cron-job.org veya benzeri: her gün aynı saatte GET/POST
+      https://<PROJE_REF>.supabase.co/functions/v1/mail-reminder-digest?secret=<CRON_SECRET>
+   B) Supabase Scheduled Functions (varsa) aynı URL + query secret
+
+Not: Uygulama kayıt sonrası ayrıca mail-welcome çağırır (oturum varsa); idempotency tablosu çift maili engeller.
+
+--- Sorun giderme (uygulamada "Hoş geldin gönderilemedi") ---
+
+1) Dashboard → Edge Functions listesinde "mail-welcome" var mı?
+   Yoksa: proje kökünde `supabase link` ve `supabase functions deploy mail-welcome`
+
+2) Edge Functions → Secrets: RESEND_API_KEY ve MAIL_FROM tanımlı mı?
+   RESEND_API_KEY yoksa fonksiyon 502 döner.
+
+3) SQL migration (welcome_mail_sent tablosu) çalıştırıldı mı?
+   Tablo yoksa insert hatası alırsın.
+
+4) Uygulama hata metninde "non-2xx" veya 404 görürsen: fonksiyon adı/deploy veya yanlış Supabase proje.
+
+5) E-posta onayı (Confirm email) açıksa ve oturum yoksa: uygulama invoke atamaz; mutlaka
+   Database Webhook (profiles INSERT → mail-welcome + x-database-webhook-secret) kur.
+
+6) Konsolda yalnızca "non-2xx status code" görüyorsan: uygulama güncellendiyse artık HTTP kodu ve
+   sunucu mesajı (ör. Resend hatası) uyarıda da gösterilir. Yaygın kodlar: 404 deploy yok, 5xx secret/SQL.
