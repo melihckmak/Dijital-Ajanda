@@ -1,3 +1,5 @@
+// UI updated by Burak
+
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Modal, Pressable, TextInput, FlatList, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import { supabase } from '../services/supabaseClient';
