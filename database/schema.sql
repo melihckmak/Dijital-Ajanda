@@ -65,3 +65,35 @@ CREATE TABLE IF NOT EXISTS org_resources (
   user_id uuid REFERENCES profiles(id) ON DELETE SET NULL,
   created_at timestamp with time zone DEFAULT now()
 );
+CREATE TABLE IF NOT EXISTS org_meetings (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  org_id uuid REFERENCES organizations(id) ON DELETE CASCADE,
+  title text NOT NULL,
+  content text NOT NULL,
+  summary text,
+  created_by uuid REFERENCES profiles(id) ON DELETE SET NULL,
+  created_at timestamp with time zone DEFAULT now()
+);
+
+-- ANKET / KARAR MODÜLÜ TABLOLARI:
+CREATE TABLE IF NOT EXISTS org_polls (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  org_id uuid REFERENCES organizations(id) ON DELETE CASCADE,
+  question text NOT NULL,
+  created_by uuid REFERENCES profiles(id) ON DELETE SET NULL,
+  created_at timestamp with time zone DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS org_poll_options (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  poll_id uuid REFERENCES org_polls(id) ON DELETE CASCADE,
+  option_text text NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS org_poll_votes (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  poll_id uuid REFERENCES org_polls(id) ON DELETE CASCADE,
+  option_id uuid REFERENCES org_poll_options(id) ON DELETE CASCADE,
+  user_id uuid REFERENCES profiles(id) ON DELETE CASCADE,
+  UNIQUE(poll_id, user_id) -- Bir kullanıcı bir ankette sadece 1 oy kullanabilir
+);
