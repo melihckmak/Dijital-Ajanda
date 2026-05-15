@@ -97,3 +97,44 @@ CREATE TABLE IF NOT EXISTS org_poll_votes (
   user_id uuid REFERENCES profiles(id) ON DELETE CASCADE,
   UNIQUE(poll_id, user_id) -- Bir kullanıcı bir ankette sadece 1 oy kullanabilir
 );
+INSERT INTO public.profiles (id, full_name)
+SELECT id, 'İsimsiz Kullanıcı' FROM auth.users
+ON CONFLICT (id) DO NOTHING;
+
+UPDATE tasks SET assigned_to = NULL WHERE assigned_to IS NOT NULL AND assigned_to NOT IN (SELECT id FROM profiles);
+DELETE FROM organization_members WHERE user_id NOT IN (SELECT id FROM profiles);
+UPDATE tasks SET status = 'Done' WHERE is_completed = true AND (status = 'To-Do' OR status IS NULL);
+
+-- 3. ESKİ POLİTİKALARI TEMİZLEME (HATA ALMAMAK İÇİN)
+drop policy if exists "Tasks_Privacy" on tasks;
+drop policy if exists "Tasks_Policy" on tasks;
+drop policy if exists "Tasks_Final" on tasks;
+drop policy if exists "Orgs_Privacy" on organizations;
+drop policy if exists "Orgs_Select_Final" on organizations;
+drop policy if exists "Orgs_Select_Fixed" on organizations;
+drop policy if exists "Orgs_Insert_Final" on organizations;
+drop policy if exists "Members_Privacy" on organization_members;
+drop policy if exists "Members_Final" on organization_members;
+drop policy if exists "Members_Fixed" on organization_members;
+drop policy if exists "Members_Select" on organization_members;
+drop policy if exists "Members_Modify" on organization_members;
+drop policy if exists "Profiles_Privacy" on profiles;
+drop policy if exists "Profiles_Final" on profiles;
+drop policy if exists "Journals_Final" on journals;
+drop policy if exists "Org_Messages_Policy" on org_messages;
+drop policy if exists "Task_Comments_Select" on task_comments;
+drop policy if exists "Task_Comments_Insert" on task_comments;
+drop policy if exists "Task_Files_Select" on task_files;
+drop policy if exists "Task_Files_Insert" on task_files;
+drop policy if exists "Org_Resources_Policy" on org_resources;
+drop policy if exists "Org_Meetings_Policy" on org_meetings;
+drop policy if exists "Org_Polls_Policy" on org_polls;
+drop policy if exists "Org_Poll_Options_Policy" on org_poll_options;
+drop policy if exists "Org_Poll_Votes_Policy" on org_poll_votes;
+
+-- STORAGE POLİTİKALARINI TEMİZLEME
+drop policy if exists "Task Files Hepsi Bir Arada Yetkisi" on storage.objects;
+drop policy if exists "Give users access to a folder only to authenticated users" on storage.objects;
+drop policy if exists "Give users authenticated access to folder" on storage.objects;
+drop policy if exists "Public Access" on storage.objects;
+drop policy if exists "Public Insert" on storage.objects;
