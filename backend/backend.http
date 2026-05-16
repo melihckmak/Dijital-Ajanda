@@ -1,0 +1,2 @@
+### Sağlık
+GET http://localhost:5053/api/health
