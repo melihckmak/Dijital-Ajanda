@@ -7,15 +7,14 @@ export default function LoginScreen({ navigation }) {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
-  //const handler fix
-  async function handleLogin() {
+  const handleLogin = async () => {
     if (!email || !password) {
       Alert.alert("Hata", "Lütfen e-posta ve şifrenizi girin.");
       return;
     }
 
     setLoading(true);
-
+    
     const { error } = await supabase.auth.signInWithPassword({
       email: email,
       password: password,
@@ -24,10 +23,10 @@ export default function LoginScreen({ navigation }) {
     if (error) {
       Alert.alert("Giriş Başarısız", error.message);
       setLoading(false);
-    }
+    } 
     // DİKKAT: navigation.replace('Home') satırını sildik.
     // App.js içindeki session kontrolü seni otomatik Home'a atacak[cite: 7].
-  }
+  };
 
   return (
     <View style={styles.container}>
@@ -56,22 +55,22 @@ export default function LoginScreen({ navigation }) {
         onPress={handleLogin}
         disabled={loading}
       >
-        {loading ? <ActivityIndicator color="#fff123" /> : <Text style={styles.loginBtnText}>login</Text>}
+        {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.loginBtnText}>Giriş Yap</Text>}
       </TouchableOpacity>
 
       <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-        <Text style={styles.linkText}>got account ? register </Text>
+        <Text style={styles.linkText}>Henüz hesabın yok mu? Kayıt Ol</Text>
       </TouchableOpacity>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', padding: 20, backgroundColor: '#F5F51235' },
-  title: { fontSize: 36, fontWeight: 'bold', color: '#80003300', textAlign: 'center', marginBottom: 10 },
-  subtitle: { fontSize: 16, color: '#63366', textAlign: 'center', marginBottom: 40 },
-  input: { backgroundColor: '#ff22f', padding: 15, borderRadius: 8, marginBottom: 15, borderWidth: 1, borderColor: '#ddd', fontSize: 16 },
-  loginBtn: { backgroundColor: '#00AEE33F', padding: 15, borderRadius: 8, alignItems: 'center', marginBottom: 15, height: 55, justifyContent: 'center' },
-  loginBtnText: { color: '#fff123', fontSize: 18, fontWeight: 'bold' },
-  linkText: { color: '#800001', textAlign: 'center', fontSize: 16, fontWeight: '500' }
+  container: { flex: 1, justifyContent: 'center', padding: 20, backgroundColor: '#F5F5F5' },
+  title: { fontSize: 36, fontWeight: 'bold', color: '#800000', textAlign: 'center', marginBottom: 10 },
+  subtitle: { fontSize: 16, color: '#666', textAlign: 'center', marginBottom: 40 },
+  input: { backgroundColor: '#fff', padding: 15, borderRadius: 8, marginBottom: 15, borderWidth: 1, borderColor: '#ddd', fontSize: 16 },
+  loginBtn: { backgroundColor: '#00AEEF', padding: 15, borderRadius: 8, alignItems: 'center', marginBottom: 15, height: 55, justifyContent: 'center' },
+  loginBtnText: { color: '#fff', fontSize: 18, fontWeight: 'bold' },
+  linkText: { color: '#800000', textAlign: 'center', fontSize: 16, fontWeight: '500' }
 });
